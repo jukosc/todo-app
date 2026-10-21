@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Todo Lab</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">RUANG KERJA</p>
+      <h1>Satu tugas,<br>selangkah maju.</h1>
+      <p class="intro">Catat yang perlu dikerjakan. Tandai saat selesai.</p>
+      <form id="todo-form">
+        <label for="title">Tugas baru</label>
+        <div class="input-row">
+          <input id="title" name="title" maxlength="200" placeholder="Apa yang ingin kamu kerjakan?" required autocomplete="off">
+          <button id="add-button" type="submit">Tambah</button>
+        </div>
+      </form>
+      <div class="list-header"><h2>Daftar tugas</h2><span id="count">Memuat…</span></div>
+      <nav aria-label="Filter tugas">
+        <button class="filter active" data-filter="all" aria-pressed="true">Semua</button>
+        <button class="filter" data-filter="active" aria-pressed="false">Belum selesai</button>
+        <button class="filter" data-filter="completed" aria-pressed="false">Selesai</button>
+      </nav>
+      <p id="message" role="status" aria-live="polite"></p>
+      <ul id="todos" aria-label="Daftar tugas"></ul>
+      <p id="empty" hidden>Belum ada tugas. Mulai dengan satu hal kecil.</p>
+      <button id="retry" hidden>Coba lagi</button>
+    </main>
+  </body>
+</html>
