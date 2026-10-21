@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const base = process.env.TEST_URL || 'http://127.0.0.1:8080';
 async function request(path, method = 'GET', data) {
@@ -26,3 +27,5 @@ try {
 assert.equal((await request(`/api/todos/${id}`, 'DELETE')).status, 404);
 assert.equal((await request('/api/todos/999999999999', 'DELETE')).status, 400);
 console.log('PASS: UI response, health, CRUD, validation, and visible updates.');
+
+assert.equal((await request('/version')).data.version, JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8')).version);
