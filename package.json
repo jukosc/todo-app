@@ -4,10 +4,15 @@
   "private": true,
   "type": "module",
   "description": "Simple todo app for Docker and Compose training",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "start": "node src/server.js",
-    "test": "node scripts/smoke-test.mjs"
+    "test": "node scripts/smoke-test.mjs",
+    "lint": "node --check src/server.js && node --check src/storage.js && node --check public/app.js && node --check scripts/smoke-test.mjs"
   },
-  "dependencies": { "pg": "^8.16.3" }
+  "dependencies": {
+    "pg": "^8.16.3"
+  }
 }

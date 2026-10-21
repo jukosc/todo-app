@@ -1,0 +1,141 @@
+{
+  "namespace": "temp-mpm",
+  "deployment": "juko-todo-app",
+  "service": "juko-todo-app",
+  "deployment_uid": "ca5e1a90-2117-47f7-adcb-8c895d8d544b",
+  "service_uid": "4b108c6b-baca-4572-816a-226ef75a9b1d",
+  "cluster_owner": "e90fe7ff887b0ab61bd4255a4ee1208b",
+  "cluster_participant": "d3-0ec3afc9",
+  "profile_id": "38c4d94fe62a49379f6fad0f70ed3d07",
+  "resource_prefix": "juko",
+  "fixture": {
+    "id": 4,
+    "title": "d3-persistent-d3-0ec3afc9",
+    "completed": false
+  },
+  "service_selector": {
+    "app.kubernetes.io/name": "juko-todo-app",
+    "training.day3.owner": "e90fe7ff887b0ab61bd4255a4ee1208b"
+  },
+  "app_template": {
+    "metadata": {
+      "labels": {
+        "training.course": "kubernetes-day-3",
+        "training.day3.owner": "e90fe7ff887b0ab61bd4255a4ee1208b",
+        "training.day3.participant": "d3-0ec3afc9",
+        "app.kubernetes.io/name": "juko-todo-app"
+      },
+      "annotations": {
+        "training.day4.config-release": "v2"
+      }
+    },
+    "spec": {
+      "securityContext": {
+        "runAsNonRoot": true,
+        "runAsUser": 1000,
+        "runAsGroup": 1000,
+        "seccompProfile": {
+          "type": "RuntimeDefault"
+        },
+        "fsGroup": 1000
+      },
+      "containers": [
+        {
+          "name": "app",
+          "image": "ghcr.io/jukosc/todo-app@sha256:979531a6d99770c62c1d3adf2e12f14a550309e3cb64cad4d7e58a7557307f67",
+          "imagePullPolicy": "IfNotPresent",
+          "ports": [
+            {
+              "name": "http",
+              "containerPort": 8080
+            }
+          ],
+          "env": [
+            {
+              "name": "PORT",
+              "value": "8080"
+            },
+            {
+              "name": "STORAGE_MODE",
+              "value": "postgres"
+            },
+            {
+              "name": "DB_PASSWORD_FILE",
+              "value": "/run/secrets/postgres_password"
+            }
+          ],
+          "resources": {
+            "requests": {
+              "cpu": "25m",
+              "memory": "32Mi"
+            },
+            "limits": {
+              "cpu": "100m",
+              "memory": "96Mi"
+            }
+          },
+          "securityContext": {
+            "allowPrivilegeEscalation": false,
+            "readOnlyRootFilesystem": true,
+            "capabilities": {
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "volumeMounts": [
+            {
+              "name": "db-password",
+              "mountPath": "/run/secrets",
+              "readOnly": true
+            }
+          ],
+          "readinessProbe": {
+            "httpGet": {
+              "path": "/readyz",
+              "port": "http"
+            },
+            "periodSeconds": 5,
+            "timeoutSeconds": 3,
+            "failureThreshold": 3
+          },
+          "envFrom": [
+            {
+              "configMapRef": {
+                "name": "juko-todo-app-config-v2"
+              }
+            }
+          ],
+          "startupProbe": {
+            "httpGet": {
+              "path": "/healthz",
+              "port": "http"
+            },
+            "periodSeconds": 3,
+            "timeoutSeconds": 2,
+            "failureThreshold": 30
+          },
+          "livenessProbe": {
+            "httpGet": {
+              "path": "/healthz",
+              "port": "http"
+            },
+            "periodSeconds": 10,
+            "timeoutSeconds": 2,
+            "failureThreshold": 3
+          }
+        }
+      ],
+      "volumes": [
+        {
+          "name": "db-password",
+          "secret": {
+            "secretName": "juko-todo-db-credentials",
+            "defaultMode": 288
+          }
+        }
+      ],
+      "automountServiceAccountToken": false
+    }
+  }
+}
