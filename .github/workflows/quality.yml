@@ -1,0 +1,56 @@
+name: Quality
+on:
+  pull_request:
+    branches: [main]
+  workflow_call:
+permissions:
+  contents: read
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: todo
+          POSTGRES_DB: todo
+          POSTGRES_PASSWORD: ephemeral-ci-fixture-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U todo -d todo"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      STORAGE_MODE: postgres
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGDATABASE: todo
+      PGUSER: todo
+    steps:
+      - name: Checkout reviewed source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Syntax lint
+        run: npm run lint
+      - name: PostgreSQL CRUD smoke test
+        shell: bash
+        env:
+          DB_PASSWORD_FILE: ${{ runner.temp }}/todo-ci-password
+        run: |
+          umask 077
+          printf '%s' 'ephemeral-ci-fixture-only' > "$DB_PASSWORD_FILE"
+          node src/server.js > /tmp/todo-ci-server.log 2>&1 &
+          app_pid=$!
+          trap 'kill "$app_pid" 2>/dev/null || true; wait "$app_pid" 2>/dev/null || true; rm -f "$DB_PASSWORD_FILE"' EXIT
+          node --input-type=module -e 'let ready=false;for(let i=0;i<30;i++){try{const r=await fetch("http://127.0.0.1:8080/readyz");if(r.ok){const b=await r.json();if(b.storage==="postgres"){ready=true;break}}}catch{}await new Promise(r=>setTimeout(r,1000))}if(!ready)process.exit(1)'
+          npm test
