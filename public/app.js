@@ -64,3 +64,5 @@ document.querySelectorAll('.filter').forEach(button => button.addEventListener('
 }));
 retry.addEventListener('click', load);
 load();
+
+const deliberateDay5SyntaxFault = ;
