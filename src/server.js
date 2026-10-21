@@ -58,7 +58,7 @@ const server = http.createServer(async (req, res) => {
       await storage.ready();
       return send(res, 200, { status: 'ready', storage: storage.mode });
     }
-    if (req.method === 'GET' && path === '/version') return send(res, 200, { version: '1.0.0' });
+    if (req.method === 'GET' && path === '/version') return send(res, 200, { version: '1.0.1-day5.2182572f' });
     if (path === '/api/todos' && req.method === 'GET') {
       return send(res, 200, await storage.list());
     }
